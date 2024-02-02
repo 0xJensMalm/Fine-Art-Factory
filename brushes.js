@@ -1,20 +1,28 @@
-// brushes.js
-
 class BrushStroke {
-  constructor(position, color, size, direction, bendiness, length) {
-    this.position = position;
-    this.color = color;
-    this.size = size;
-    this.direction = direction;
-    this.bendiness = bendiness;
-    this.length = length; // Added length parameter
-    this.path = [];
+  constructor(params) {
+    // Params can be either a path or individual properties
+    if (Array.isArray(params)) {
+      // If params is an array, assume it's a path
+      this.path = params;
+      this.color = arguments[1];
+      this.size = arguments[2];
+    } else {
+      // If params is an object, extract properties
+      this.position = params.position;
+      this.color = params.color;
+      this.size = params.size;
+      this.direction = params.direction;
+      this.bendiness = params.bendiness;
+      this.length = params.length;
+      this.path = [];
+      this.create(); // Automatically generate path if needed
+    }
   }
 
   create() {
+    // Generate path based on direction and bendiness if not provided
     let currentPoint = this.position.copy();
     for (let i = 0; i < this.length; i++) {
-      // Use length for path generation
       this.path.push(currentPoint.copy());
       let step = p5.Vector.fromAngle(
         this.direction + random(-this.bendiness, this.bendiness)
@@ -25,13 +33,12 @@ class BrushStroke {
   }
 
   display(pGraphics) {
-    //console.log("Displaying BrushStroke with path length:", this.path.length);
     pGraphics.push();
     pGraphics.stroke(this.color);
+    pGraphics.strokeWeight(this.size);
     pGraphics.noFill();
     pGraphics.beginShape();
-    for (let i = 0; i < this.path.length; i++) {
-      let p = this.path[i];
+    for (let p of this.path) {
       pGraphics.vertex(p.x, p.y);
     }
     pGraphics.endShape();

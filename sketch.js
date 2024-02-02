@@ -27,6 +27,8 @@ let colorPalette = [
   { color: "#F7C519", name: "Sun Yellow" },
 ];
 
+let algorithms = ["Noodles", "FlowField"];
+
 function preload() {
   frameImage = loadImage("frame.svg"); // Ensure this path is correct
 }
@@ -40,17 +42,19 @@ function setup() {
 
   // Algorithm selection dropdown
   algorithmSelector = createSelect();
-  algorithmSelector.option("Noodles"); // Add more algorithms as options here
+  algorithms.forEach((alg) => algorithmSelector.option(alg));
   algorithmSelector.changed(onAlgorithmChange);
+  algorithmSelector.position(10, 10); // Position at the top-left corner
 
   // Generate Art button
   let generateBtn = createButton("Generate Art");
   generateBtn.mousePressed(generateArt);
+  generateBtn.position(160, 10); // Adjust this position based on the actual width of your selector
 
   drawBackground();
 
-  // Initialize the default algorithm
-  currentAlgorithm = new Noodles(paintingArea, colorPalette); // Set default algorithm
+  // Initialize with the first algorithm as default
+  currentAlgorithm = instantiateAlgorithm(algorithms[0]);
 }
 
 function draw() {
@@ -76,14 +80,18 @@ function generateArt() {
 }
 
 function onAlgorithmChange() {
-  let selectedAlgorithm = algorithmSelector.value();
-  switch (selectedAlgorithm) {
+  currentAlgorithm = instantiateAlgorithm(algorithmSelector.value());
+}
+function instantiateAlgorithm(name) {
+  switch (name) {
     case "Noodles":
-      currentAlgorithm = new Noodles(paintingArea, colorPalette);
-      break;
-    // Add cases for other algorithms as you create them
+      return new Noodles(paintingArea, colorPalette);
+    case "FlowField":
+      return new FlowField(paintingArea, colorPalette);
+    // Add new cases here as you create more algorithms
     default:
-      currentAlgorithm = new Noodles(paintingArea, colorPalette); // Default to Noodles if no match found
+      console.error("Unknown algorithm:", name);
+      return null;
   }
 }
 

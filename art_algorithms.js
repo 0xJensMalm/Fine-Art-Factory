@@ -2,9 +2,9 @@ class Noodles {
   constructor(paintingArea, colorPalette) {
     this.paintingArea = paintingArea;
     this.colorPalette = colorPalette;
-    this.sizeRange = [50, 80]; // Moved inside the algorithm
-    this.bendinessRange = [2, 100]; // Moved inside the algorithm
-    this.length = 100; // Length of each stroke
+    this.sizeRange = [5, 80];
+    this.bendinessRange = [0.1, 3];
+    this.length = 100;
   }
 
   generateStrokes(numStrokes) {
@@ -25,19 +25,65 @@ class Noodles {
     let size = random(this.sizeRange[0], this.sizeRange[1]);
     let direction = random(TWO_PI);
     let bendiness = int(random(this.bendinessRange[0], this.bendinessRange[1]));
+    let length = this.length;
 
-    let stroke = new BrushStroke(
-      position,
-      color,
-      size,
-      direction,
-      bendiness,
-      this.length
-    );
-    stroke.create(); // Ensure the path is generated
-    //console.log("Generated BrushStroke with length:", stroke.path.length); // Log the length of the path
+    // Update to match the new BrushStroke constructor
+    let strokeParams = {
+      position: position,
+      color: color,
+      size: size,
+      direction: direction,
+      bendiness: bendiness,
+      length: length,
+    };
+
+    let stroke = new BrushStroke(strokeParams);
     return stroke;
   }
 }
 
-// More algorithms can be added here following a similar pattern
+class FlowField {
+  constructor(paintingArea, colorPalette) {
+    this.paintingArea = paintingArea;
+    this.colorPalette = colorPalette;
+    // Parameters for flow field complexity and flow strength
+    this.noiseScale = 0.02; // Adjust for more or less detailed flow
+    this.flowStrength = TWO_PI; // Adjust for stronger or subtler flow direction changes
+    this.strokeLength = 400; // Length of each stroke in the flow field
+  }
+
+  generateStrokes(numStrokes) {
+    let strokes = [];
+    for (let i = 0; i < numStrokes; i++) {
+      strokes.push(this.generateBrushStroke());
+    }
+    return strokes;
+  }
+
+  generateBrushStroke() {
+    // Start at a random position within the painting area
+    let position = createVector(
+      random(this.paintingArea.width),
+      random(this.paintingArea.height)
+    );
+    let color = random(this.colorPalette).color; // Pick a random color from the palette
+    let size = random(1, 5); // Randomize stroke size for variety
+    let path = [];
+
+    // Generate the path based on the flow field
+    for (let i = 0; i < this.strokeLength; i++) {
+      let angle =
+        noise(position.x * this.noiseScale, position.y * this.noiseScale) *
+        this.flowStrength;
+      let direction = p5.Vector.fromAngle(angle);
+      position.add(direction); // Move the position along the direction
+      path.push(position.copy());
+
+      // Keep the stroke within the painting area
+      position.x = constrain(position.x, 0, this.paintingArea.width);
+      position.y = constrain(position.y, 0, this.paintingArea.height);
+    }
+
+    return new BrushStroke(path, color, size); // Note: BrushStroke class might need adjustments to accept a path
+  }
+}
