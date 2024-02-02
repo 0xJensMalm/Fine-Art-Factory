@@ -1,81 +1,120 @@
+// Constants for canvas and painting dimensions
+const CANVAS_WIDTH = 794;
+const CANVAS_HEIGHT = 1123;
+const PAINTING_WIDTH = 566;
+const PAINTING_HEIGHT = 880;
+
+// Art properties
+let numStrokes = 150;
+let sizeRange = [50, 80];
+let bendinessRange = [2, 1000];
+
+// Core objects
 let frameSVG;
 let paintingArea;
-
-let paintingWidth = 566; // Width of the painting area
-let paintingHeight = 880; // Height of the painting area
-
-let colorPalette = [];
-let brushStrokes = []; // Array to hold brush strokes
-
-let numStrokes = 150; // Total number of brush strokes
-let randomSizeRange = [50, 80]; // Range of brush stroke sizes
-let randomBendinessRange = [2, 1000]; // Range of bendiness for strokes
-
-function setupColorPalette() {
-  // Define some paint-like colors
-  colorPalette = [
-    color("#3a3736"), // Dark Gray
-    color("#a24925"), // Rust
-    color("#678ca2"), // Gun Metal
-    color("#cca83f"), // Gold
-    color("#680E0A"), // Blood Red
-    color("#D5F1EA"), // Mint Green
-    color("#F7C519"), // Jongquil
-    // Add more colors as needed
-  ];
-}
+let colorPalette;
+let brushStrokes = [];
 
 function preload() {
-  frameSVG = loadImage("frame.svg"); // Update this path
+  frameSVG = loadImage("frame.svg"); // Make sure this path is correct
 }
 
+window.generateArt = generateArt;
+
 function setup() {
-  createCanvas(794, 1123);
+  createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   imageMode(CENTER);
   rectMode(CENTER);
-  setupColorPalette();
+  paintingArea = createGraphics(PAINTING_WIDTH, PAINTING_HEIGHT);
 
-  // Initialize the painting area as a graphics buffer
-  paintingArea = createGraphics(paintingWidth, paintingHeight);
-
-  // Initial draw background and frame
+  colorPalette = new ColorPalette(); // Initialize here, after class definition
+  colorPalette.setup();
   drawBackground();
 }
 
+function draw() {
+  clearPaintingArea();
+  displayBrushStrokes();
+  drawPaintingArea();
+}
+
 function drawBackground() {
-  clear(); // Clear the main canvas
-  // Draw the SVG frame onto the main canvas
+  clear();
   image(frameSVG, width / 2, height / 2, width, height);
 }
 
-function draw() {
-  // Clear the painting area buffer for fresh drawing
+function clearPaintingArea() {
   paintingArea.clear();
+}
 
-  // Iterate over the brush strokes and display each one onto the paintingArea buffer
-  brushStrokes.forEach((stroke) => stroke.display());
+function displayBrushStrokes() {
+  brushStrokes.forEach((stroke) => stroke.display(paintingArea));
+}
 
-  // Draw the paintingArea buffer onto the main canvas within the designated area
+function drawPaintingArea() {
   image(paintingArea, width / 2, height / 2);
+}
+
+function generateArt() {
+  brushStrokes = []; // Clear existing strokes
+  for (let i = 0; i < numStrokes; i++) {
+    brushStrokes.push(generateBrushStroke());
+  }
+}
+
+function generateBrushStroke() {
+  let position = createVector(random(width), random(height));
+  let color = colorPalette.getRandomColor();
+  let size = random(sizeRange[0], sizeRange[1]);
+  let direction = random(TWO_PI);
+  let bendiness = int(random(bendinessRange[0], bendinessRange[1]));
+
+  return new BrushStroke(position, color, size, direction, bendiness);
+}
+
+function keyReleased() {
+  if (key === "s" || key === "S") {
+    saveCanvas("FineArtFactory", "png");
+  }
+}
+
+class ColorPalette {
+  constructor() {
+    this.colors = [];
+  }
+
+  setup() {
+    this.colors = [
+      "#3a3736",
+      "#a24925",
+      "#678ca2",
+      "#cca83f",
+      "#680E0A",
+      "#D5F1EA",
+      "#F7C519",
+      // Add more colors as needed
+    ];
+  }
+
+  getRandomColor() {
+    return color(random(this.colors));
+  }
 }
 
 class BrushStroke {
   constructor(position, color, size, direction, bendiness) {
+    this.position = position;
     this.color = color;
     this.size = size;
-    this.controlPoints = this.generateControlPoints(
-      position,
-      direction,
-      bendiness
-    );
+    this.bendiness = bendiness;
+    this.controlPoints = this.generateControlPoints(direction);
   }
 
-  generateControlPoints(position, direction, bendiness) {
-    let points = [];
-    let currentPoint = position.copy();
-    points.push(currentPoint);
+  generateControlPoints(direction) {
+    let points = [this.position];
+    let currentPoint = this.position.copy();
 
-    for (let i = 0; i < bendiness; i++) {
+    for (let i = 0; i < this.bendiness; i++) {
       let angleVariation = random(-PI / 6, PI / 6);
       let angle = direction + angleVariation;
       let distance = random(50, 150);
@@ -89,40 +128,17 @@ class BrushStroke {
     return points;
   }
 
-  display() {
-    paintingArea.push();
-    paintingArea.stroke(this.color);
-    paintingArea.strokeWeight(this.size);
+  display(pGraphics) {
+    pGraphics.push();
+    pGraphics.stroke(this.color);
+    pGraphics.strokeWeight(this.size);
 
     for (let i = 1; i < this.controlPoints.length; i++) {
       let startPoint = this.controlPoints[i - 1];
       let endPoint = this.controlPoints[i];
-      paintingArea.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+      pGraphics.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
     }
-    paintingArea.pop();
-  }
-}
 
-function generateArt() {
-  brushStrokes = []; // Clear existing strokes
-
-  for (let i = 0; i < numStrokes; i++) {
-    let position = createVector(random(width), random(height));
-    let color = random(colorPalette);
-    let size = random(randomSizeRange[0], randomSizeRange[1]);
-    let direction = random(TWO_PI);
-    let bendiness = int(
-      random(randomBendinessRange[0], randomBendinessRange[1])
-    );
-
-    brushStrokes.push(
-      new BrushStroke(position, color, size, direction, bendiness)
-    );
-  }
-}
-
-function keyReleased() {
-  if (key == "s" || key == "S") {
-    saveCanvas("FineArtFactory", "png");
+    pGraphics.pop();
   }
 }
