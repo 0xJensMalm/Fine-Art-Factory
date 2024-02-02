@@ -6,8 +6,10 @@ const PAINTING_HEIGHT = 880;
 
 // Art properties
 let numStrokes = 150;
-let sizeRange = [50, 80];
-let bendinessRange = [2, 1000];
+
+// UI Elements
+let algorithmSelector;
+let currentAlgorithm;
 
 // Core objects
 let frameImage;
@@ -33,12 +35,22 @@ function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   imageMode(CENTER);
   rectMode(CENTER);
+
   paintingArea = createGraphics(PAINTING_WIDTH, PAINTING_HEIGHT);
 
+  // Algorithm selection dropdown
+  algorithmSelector = createSelect();
+  algorithmSelector.option("Noodles"); // Add more algorithms as options here
+  algorithmSelector.changed(onAlgorithmChange);
+
+  // Generate Art button
   let generateBtn = createButton("Generate Art");
-  generateBtn.mousePressed(generateArt); // Ensure this is correctly calling generateArt
+  generateBtn.mousePressed(generateArt);
 
   drawBackground();
+
+  // Initialize the default algorithm
+  currentAlgorithm = new Noodles(paintingArea, colorPalette); // Set default algorithm
 }
 
 function draw() {
@@ -59,22 +71,20 @@ function drawBackground() {
 }
 
 function generateArt() {
-  brushStrokes = []; // Clear existing strokes
-  for (let i = 0; i < numStrokes; i++) {
-    brushStrokes.push(generateBrushStroke());
-  }
+  brushStrokes = currentAlgorithm.generateStrokes(numStrokes); // Use the current algorithm to generate strokes
+  console.log("Generated art with strokes count:", brushStrokes.length); // Log the count of generated strokes
 }
 
-function generateBrushStroke() {
-  let position = createVector(random(PAINTING_WIDTH), random(PAINTING_HEIGHT));
-  let color = random(colorPalette).color; // Assuming colorPalette is an array of color strings
-  let size = random(sizeRange[0], sizeRange[1]);
-  let direction = random(TWO_PI);
-  let bendiness = int(random(bendinessRange[0], bendinessRange[1]));
-
-  let stroke = new BrushStroke(position, color, size, direction, bendiness);
-  stroke.create(); // Make sure the path is generated
-  return stroke;
+function onAlgorithmChange() {
+  let selectedAlgorithm = algorithmSelector.value();
+  switch (selectedAlgorithm) {
+    case "Noodles":
+      currentAlgorithm = new Noodles(paintingArea, colorPalette);
+      break;
+    // Add cases for other algorithms as you create them
+    default:
+      currentAlgorithm = new Noodles(paintingArea, colorPalette); // Default to Noodles if no match found
+  }
 }
 
 function keyReleased() {
