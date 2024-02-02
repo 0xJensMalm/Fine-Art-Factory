@@ -1,0 +1,21 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: black;
+}
+
+#canvas-container {
+    text-align: center; /* Centers inline elements like the canvas */
+    position: relative;
+    width: 95vw; /* Adjust based on your needs, ensuring it's responsive */
+    max-width: 794px; /* Maximum width, adjust to your canvas width */
+    margin: auto; /* Centers the container horizontally */
+}
+
+canvas {
+    max-width: 100%;
+    height: auto; /* Ensures the canvas scales proportionally */
+}

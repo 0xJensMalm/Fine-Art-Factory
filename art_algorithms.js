@@ -48,8 +48,17 @@ class FlowField {
     this.colorPalette = colorPalette;
     // Parameters for flow field complexity and flow strength
     this.noiseScale = 0.02; // Adjust for more or less detailed flow
-    this.flowStrength = TWO_PI; // Adjust for stronger or subtler flow direction changes
+    //this.flowStrength = TWO_PI; // Adjust for stronger or subtler flow direction changes
     this.strokeLength = 400; // Length of each stroke in the flow field
+
+    this.flowStrengthMin = TWO_PI * 0.6; // Minimum flow strength
+    this.flowStrengthMax = TWO_PI * 1.2; // Maximum flow strength
+
+    this.lineThicknessMin = 0.5; // Minimum line thickness
+    this.lineThicknessMax = 3; // Maximum line thickness
+
+    this.flowStrength = random(this.flowStrengthMin, this.flowStrengthMax);
+    this.lineThickness = random(this.lineThicknessMin, this.lineThicknessMax);
   }
 
   generateStrokes(numStrokes) {
@@ -67,7 +76,7 @@ class FlowField {
       random(this.paintingArea.height)
     );
     let color = random(this.colorPalette).color; // Pick a random color from the palette
-    let size = random(1, 5); // Randomize stroke size for variety
+    let size = this.lineThickness; // Use the line thickness variable
     let path = [];
 
     // Generate the path based on the flow field

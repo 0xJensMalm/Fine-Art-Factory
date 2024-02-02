@@ -15,6 +15,8 @@ let currentAlgorithm;
 let frameImage;
 let paintingArea;
 let brushStrokes = [];
+let resetButton;
+let saveButton;
 
 // Color palette
 let colorPalette = [
@@ -50,6 +52,12 @@ function setup() {
   let generateBtn = createButton("Generate Art");
   generateBtn.mousePressed(generateArt);
   generateBtn.position(160, 10); // Adjust this position based on the actual width of your selector
+  resetButton = createButton("Reset");
+  resetButton.position(260, 10); // Adjust the position as needed
+  resetButton.mousePressed(resetCanvas);
+  saveButton = createButton("Save");
+  saveButton.position(310, 10); // Adjust the position as needed
+  saveButton.mousePressed(saveCanvasImage);
 
   drawBackground();
 
@@ -95,8 +103,14 @@ function instantiateAlgorithm(name) {
   }
 }
 
-function keyReleased() {
-  if (key === "s" || key === "S") {
-    saveCanvas("FineArtFactory", "png");
-  }
+function resetCanvas() {
+  // Clear the canvas and reset any necessary variables
+  paintingArea.clear(); // Clear the paintingArea
+  brushStrokes = []; // Clear the array of brush strokes
+  drawBackground(); // Redraw the background
+}
+
+function saveCanvasImage() {
+  // Save the canvas image as a PNG file
+  saveCanvas("FineArtFactory", "png");
 }
