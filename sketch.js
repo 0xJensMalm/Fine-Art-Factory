@@ -1,11 +1,10 @@
-// Constants for canvas and painting dimensions
 const CANVAS_WIDTH = 794;
 const CANVAS_HEIGHT = 1123;
 const PAINTING_WIDTH = 566;
 const PAINTING_HEIGHT = 880;
 
 // Art properties
-let numStrokes = 150;
+let numStrokes = 350; // Depending on your new algorithms, this might still be relevant or can be removed
 
 // UI Elements
 let algorithmSelector;
@@ -14,22 +13,10 @@ let currentAlgorithm;
 // Core objects
 let frameImage;
 let paintingArea;
-let brushStrokes = [];
 let resetButton;
 let saveButton;
 
-// Color palette
-let colorPalette = [
-  { color: "#3a3736", name: "Charcoal" },
-  { color: "#a24925", name: "Burnt Sienna" },
-  { color: "#678ca2", name: "Sky Blue" },
-  { color: "#cca83f", name: "Gold" },
-  { color: "#680E0A", name: "Deep Red" },
-  { color: "#D5F1EA", name: "Pale Turquoise" },
-  { color: "#F7C519", name: "Sun Yellow" },
-];
-
-let algorithms = ["Noodles", "FlowField"];
+let algorithms = ["HommageADurer", "RisouGrid", "PaleOrb", "Bleed"];
 
 function preload() {
   frameImage = loadImage("frame.svg"); // Ensure this path is correct
@@ -66,8 +53,6 @@ function setup() {
 }
 
 function draw() {
-  paintingArea.clear();
-  brushStrokes.forEach((stroke) => stroke.display(paintingArea));
   image(paintingArea, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 }
 
@@ -83,20 +68,28 @@ function drawBackground() {
 }
 
 function generateArt() {
-  brushStrokes = currentAlgorithm.generateStrokes(numStrokes); // Use the current algorithm to generate strokes
-  console.log("Generated art with strokes count:", brushStrokes.length); // Log the count of generated strokes
+  if (currentAlgorithm) {
+    currentAlgorithm.generateArt();
+  } else {
+    console.error("No algorithm is currently selected.");
+  }
 }
 
 function onAlgorithmChange() {
   currentAlgorithm = instantiateAlgorithm(algorithmSelector.value());
 }
+
 function instantiateAlgorithm(name) {
   switch (name) {
-    case "Noodles":
-      return new Noodles(paintingArea, colorPalette);
-    case "FlowField":
-      return new FlowField(paintingArea, colorPalette);
-    // Add new cases here as you create more algorithms
+    case "HommageADurer":
+      return new HommageADurer(paintingArea); // Adjusted to match the new constructor
+    // Add cases for other algorithms as needed
+    case "RisouGrid":
+      return new RisouGrid(paintingArea);
+    case "PaleOrb":
+      return new PaleOrb(paintingArea);
+    case "Bleed":
+      return new Bleed(paintingArea);
     default:
       console.error("Unknown algorithm:", name);
       return null;
@@ -104,9 +97,7 @@ function instantiateAlgorithm(name) {
 }
 
 function resetCanvas() {
-  // Clear the canvas and reset any necessary variables
   paintingArea.clear(); // Clear the paintingArea
-  brushStrokes = []; // Clear the array of brush strokes
   drawBackground(); // Redraw the background
 }
 
